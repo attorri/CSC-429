@@ -1,0 +1,80 @@
+# Cell 1
+
+import tarfile
+
+# This is the path for the .tar file for my OS
+tar_file_path = '/Users/christianattorri/downloads/textures.tar'
+
+with tarfile.open(tar_file_path, 'r') as tar:
+    members = tar.getmembers()
+    
+    # I wrote this to test if the .tar file was opened
+    for member in members:
+        print(member.name)
+
+
+# Cell 2
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+# Cell 3
+
+kernel = np.ones((5, 5), np.uint8)
+kernel_dilation = np.ones((5, 5), np.uint8)
+kernel_size_median = 9
+kernel_size_gaussian = (5, 5)
+
+
+# I am saving the images derived from Erosion, Dilation and Gaussian Filter
+
+output_directory = '/Users/christianattorri/downloads/'
+
+os.makedirs(output_directory, exist_ok=True)
+
+
+for member in members:
+    # All the images are '.tiff' type, so I'm making sure I'm only working with images
+    if member.name.endswith('.tiff'):
+        image_path = member.name
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+        eroded_image = cv2.erode(image, kernel, iterations=2)  # original iterations was 1
+        cv2.imwrite(os.path.join(output_directory, 'eroded_image.png'), eroded_image) 
+
+        filtered_image_median = cv2.medianBlur(image, kernel_size_median)
+
+        dilated_image = cv2.dilate(image, kernel_dilation, iterations=2)
+        cv2.imwrite(os.path.join(output_directory, 'dilated_image.png'), dilated_image)
+
+        
+        filtered_image_gaussian = cv2.GaussianBlur(image, kernel_size_gaussian, 2)
+        cv2.imwrite(os.path.join(output_directory,'filtered_image_gaussian.png'), filtered_image_gaussian)  
+
+        plt.figure(figsize=(20, 5))
+
+        plt.subplot(1, 5, 1)
+        plt.imshow(image, cmap='gray')
+        plt.title('Original Image')
+
+        plt.subplot(1, 5, 2)
+        plt.imshow(eroded_image, cmap='gray')
+        plt.title('Eroded Image')
+
+        plt.subplot(1, 5, 3)
+        plt.imshow(dilated_image, cmap='gray')
+        plt.title('Dilated Image')
+
+        plt.subplot(1, 5, 4)
+        plt.imshow(filtered_image_gaussian, cmap='gray')
+        plt.title('Gaussian Filtered Image')
+
+        plt.subplot(1, 5, 5)
+        plt.imshow(filtered_image_median, cmap='gray')
+        plt.title('Median Filtered Image')
+
+        plt.show()
+
+
